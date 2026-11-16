@@ -29,7 +29,10 @@ async function load(){
     <div class="card">
       <b>${esc(l.method)}</b> ${esc(l.url)} — ${esc(l.receivedAt)}
       <span class="${l.authorized?'ok':'bad'}">${l.authorized?'authorized':'UNAUTHORIZED'}</span>
-      <div>Body:</div><pre>${esc(JSON.stringify(l.body,null,2))}</pre>
+      ${l.method==='GET'
+        ? `<div>Query params (GET):</div><pre>${esc(JSON.stringify(l.query,null,2))}</pre>`
+        : `<div>Body (${esc(l.method)}):</div><pre>${esc(typeof l.body==='string'?l.body:JSON.stringify(l.body,null,2))}</pre>
+           ${Object.keys(l.query||{}).length?`<div>Query params:</div><pre>${esc(JSON.stringify(l.query,null,2))}</pre>`:''}`}
       <details><summary>Headers</summary><pre>${esc(JSON.stringify(l.headers,null,2))}</pre></details>
     </div>`).join('') : '<p>No requests yet.</p>';
 }
