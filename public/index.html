@@ -1,0 +1,40 @@
+<!doctype html>
+<html>
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>NXLink Test API</title>
+<style>
+  body{font-family:system-ui,sans-serif;margin:0;padding:16px;background:#f6f7f9;color:#222}
+  h1{font-size:20px} code{background:#e8eaed;padding:2px 6px;border-radius:4px}
+  .card{background:#fff;border:1px solid #ddd;border-radius:8px;padding:12px;margin:12px 0}
+  .ok{color:#188038}.bad{color:#d93025}
+  pre{background:#272822;color:#f8f8f2;padding:10px;border-radius:6px;overflow:auto;font-size:13px}
+  button{padding:6px 12px;margin-right:8px}
+</style>
+</head>
+<body>
+<h1>NXLink Test API</h1>
+<p>Endpoint: <code id="ep"></code> (GET or POST). Shows the last 50 requests received.</p>
+<button onclick="load()">Refresh</button><button onclick="clearAll()">Clear</button>
+<label><input type="checkbox" id="auto" checked> auto-refresh</label>
+<div id="list"></div>
+<script>
+const base = location.origin;
+document.getElementById('ep').textContent = base + '/v1/escalation';
+const esc = s => String(s).replace(/[&<>]/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;'}[c]));
+async function load(){
+  const logs = await (await fetch('/api/logs')).json();
+  document.getElementById('list').innerHTML = logs.length ? logs.map(l => `
+    <div class="card">
+      <b>${esc(l.method)}</b> ${esc(l.url)} — ${esc(l.receivedAt)}
+      <span class="${l.authorized?'ok':'bad'}">${l.authorized?'authorized':'UNAUTHORIZED'}</span>
+      <div>Body:</div><pre>${esc(JSON.stringify(l.body,null,2))}</pre>
+      <details><summary>Headers</summary><pre>${esc(JSON.stringify(l.headers,null,2))}</pre></details>
+    </div>`).join('') : '<p>No requests yet.</p>';
+}
+async function clearAll(){ await fetch('/api/logs',{method:'DELETE'}); load(); }
+load(); setInterval(()=>{ if(document.getElementById('auto').checked) load(); }, 3000);
+</script>
+</body>
+</html>
