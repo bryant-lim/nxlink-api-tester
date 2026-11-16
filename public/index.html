@@ -22,12 +22,13 @@
 <script>
 const base = location.origin;
 document.getElementById('ep').textContent = base + '/v1/escalation';
+const fmt = t => new Date(t).toLocaleString('en-GB',{timeZone:'Asia/Singapore',hour12:false}) + ' (GMT+8)';
 const esc = s => String(s).replace(/[&<>]/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;'}[c]));
 async function load(){
   const logs = await (await fetch('/v1/escalation?__logs=1')).json();
   document.getElementById('list').innerHTML = logs.length ? logs.map(l => `
     <div class="card">
-      <b>${esc(l.method)}</b> ${esc(l.url)} — ${esc(l.receivedAt)}
+      <b>${esc(l.method)}</b> ${esc(l.url)} — ${esc(fmt(l.receivedAt))}
       <span class="${l.authorized?'ok':'bad'}">${l.authorized?'authorized':'UNAUTHORIZED'}</span>
       ${l.method==='GET'
         ? `<div>Query params (GET):</div><pre>${esc(JSON.stringify(l.query,null,2))}</pre>`
