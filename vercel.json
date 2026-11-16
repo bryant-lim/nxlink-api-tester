@@ -1,5 +1,5 @@
 {
   "rewrites": [
-    { "source": "/v1/escalation", "destination": "/api/escalation" }
+    { "source": "/(.+)", "destination": "/api/escalation" }
   ]
 }
