@@ -1,4 +1,5 @@
-import { addLog } from "./_store.js";
+// Logs live in the same function as the endpoint so they share memory.
+globalThis.__nxlogs = globalThis.__nxlogs || [];
 
 // Optional auth: set AUTH_TOKEN in Vercel env to enforce it.
 // Accepts "Authorization: Bearer <token>", "Authorization: Basic <base64>" or "x-api-key: <token>".
@@ -18,8 +19,15 @@ function checkAuth(req) {
 export default function handler(req, res) {
   res.setHeader("Access-Control-Allow-Origin", "*");
   res.setHeader("Access-Control-Allow-Headers", "*");
-  res.setHeader("Access-Control-Allow-Methods", "GET,POST,OPTIONS");
+  res.setHeader("Access-Control-Allow-Methods", "GET,POST,DELETE,OPTIONS");
   if (req.method === "OPTIONS") return res.status(204).end();
+
+  // Viewer access: /v1/escalation?__logs=1 (GET = list, DELETE = clear)
+  if (req.query && req.query.__logs) {
+    res.setHeader("Cache-Control", "no-store");
+    if (req.method === "DELETE") globalThis.__nxlogs = [];
+    return res.status(200).json(globalThis.__nxlogs);
+  }
 
   const authorized = checkAuth(req);
   const entry = {
@@ -31,7 +39,8 @@ export default function handler(req, res) {
     body: req.body ?? null,
     authorized,
   };
-  addLog(entry);
+  globalThis.__nxlogs.unshift(entry);
+  globalThis.__nxlogs.length = Math.min(globalThis.__nxlogs.length, 50);
 
   if (!authorized) {
     return res.status(401).json({ success: false, message: "Unauthorized" });

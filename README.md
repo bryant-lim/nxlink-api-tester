@@ -3,7 +3,7 @@
 Tiny endpoint to test NXLink "Invoke API" nodes. Accepts GET/POST, echoes the JSON back, and shows received requests on the home page.
 
 - `POST /v1/escalation` (also `/api/escalation`) – returns `{success, message, body, ...}`
-- `GET /api/logs` – last 50 requests (in-memory, best effort)
+- `GET /v1/escalation?__logs=1` – last 50 requests (in-memory, best effort)
 - `/` – live viewer
 
 ## Optional authentication
